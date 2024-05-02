@@ -9,13 +9,6 @@
     ]
   },
   "Packages": {
-    "BH": {
-      "Package": "BH",
-      "Version": "1.84.0-0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "a8235afbcd6316e6e91433ea47661013"
-    },
     "DBI": {
       "Package": "DBI",
       "Version": "1.2.2",
@@ -113,18 +106,6 @@
         "utils"
       ],
       "Hash": "ca98390ad1cef2a5a609597b49d3d042"
-    },
-    "anytime": {
-      "Package": "anytime",
-      "Version": "0.3.9",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "BH",
-        "R",
-        "Rcpp"
-      ],
-      "Hash": "74a64813f17b492da9c6afda6b128e3d"
     },
     "askpass": {
       "Package": "askpass",
@@ -453,22 +434,6 @@
       ],
       "Hash": "7ede2ee9ea8d3edbf1ca84c1e333ad1a"
     },
-    "distributional": {
-      "Package": "distributional",
-      "Version": "0.4.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "generics",
-        "lifecycle",
-        "numDeriv",
-        "rlang",
-        "stats",
-        "utils",
-        "vctrs"
-      ],
-      "Hash": "3bad76869f2257ea4fd00a3c08c2bcce"
-    },
     "dplyr": {
       "Package": "dplyr",
       "Version": "1.1.4",
@@ -549,53 +514,6 @@
       ],
       "Hash": "daf4a1246be12c1fa8c7705a0935c1a0"
     },
-    "fable": {
-      "Package": "fable",
-      "Version": "0.3.4",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "Rcpp",
-        "distributional",
-        "dplyr",
-        "fabletools",
-        "rlang",
-        "stats",
-        "tibble",
-        "tidyr",
-        "tsibble",
-        "utils"
-      ],
-      "Hash": "143f72e07e384851f2f2f94a04444793"
-    },
-    "fabletools": {
-      "Package": "fabletools",
-      "Version": "0.4.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "R6",
-        "distributional",
-        "dplyr",
-        "generics",
-        "ggdist",
-        "ggplot2",
-        "lifecycle",
-        "progressr",
-        "rlang",
-        "scales",
-        "stats",
-        "tibble",
-        "tidyr",
-        "tidyselect",
-        "tsibble",
-        "utils",
-        "vctrs"
-      ],
-      "Hash": "005e92a674b01825e0feb29931c03c5e"
-    },
     "fansi": {
       "Package": "fansi",
       "Version": "1.0.6",
@@ -621,31 +539,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "f7736a18de97dea803bde0a2daaafb27"
-    },
-    "feasts": {
-      "Package": "feasts",
-      "Version": "0.3.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "dplyr",
-        "fabletools",
-        "ggplot2",
-        "grid",
-        "gtable",
-        "lifecycle",
-        "lubridate",
-        "rlang",
-        "scales",
-        "slider",
-        "tibble",
-        "tidyr",
-        "tsibble",
-        "utils",
-        "vctrs"
-      ],
-      "Hash": "d15631c019c27e50b1a99e3e9b3b53e1"
     },
     "fontawesome": {
       "Package": "fontawesome",
@@ -674,31 +567,6 @@
         "tibble"
       ],
       "Hash": "1a0a9a3d5083d0d573c4214576f1e690"
-    },
-    "fpp3": {
-      "Package": "fpp3",
-      "Version": "0.5",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "cli",
-        "crayon",
-        "dplyr",
-        "fable",
-        "fabletools",
-        "feasts",
-        "ggplot2",
-        "lubridate",
-        "magrittr",
-        "purrr",
-        "rstudioapi",
-        "tibble",
-        "tidyr",
-        "tsibble",
-        "tsibbledata"
-      ],
-      "Hash": "5d8af03fcd8a2f4efa16898206df1b1a"
     },
     "fs": {
       "Package": "fs",
@@ -743,30 +611,6 @@
         "methods"
       ],
       "Hash": "15e9634c0fcd294799e9b2e929ed1b86"
-    },
-    "ggdist": {
-      "Package": "ggdist",
-      "Version": "3.3.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "Rcpp",
-        "cli",
-        "distributional",
-        "ggplot2",
-        "glue",
-        "grid",
-        "gtable",
-        "numDeriv",
-        "quadprog",
-        "rlang",
-        "scales",
-        "tibble",
-        "vctrs",
-        "withr"
-      ],
-      "Hash": "86ebb3543cdad6520be9bf8863167a9a"
     },
     "ggplot2": {
       "Package": "ggplot2",
@@ -1219,16 +1063,6 @@
       ],
       "Hash": "8d1938040a05566f4f7a14af4feadd6b"
     },
-    "numDeriv": {
-      "Package": "numDeriv",
-      "Version": "2016.8-1.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "df58958f293b166e4ab885ebcad90e02"
-    },
     "openssl": {
       "Package": "openssl",
       "Version": "2.1.1",
@@ -1321,18 +1155,6 @@
       ],
       "Hash": "f4625e061cb2865f111b47ff163a5ca6"
     },
-    "progressr": {
-      "Package": "progressr",
-      "Version": "0.14.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "digest",
-        "utils"
-      ],
-      "Hash": "ac50c4ffa8f6a46580dd4d7813add3c4"
-    },
     "proxy": {
       "Package": "proxy",
       "Version": "0.4-27",
@@ -1370,16 +1192,6 @@
         "vctrs"
       ],
       "Hash": "1cba04a4e9414bdefc9dcaa99649a8dc"
-    },
-    "quadprog": {
-      "Package": "quadprog",
-      "Version": "1.5-8",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "5f919ae5e7f83a6f91dcf2288943370d"
     },
     "ragg": {
       "Package": "ragg",
@@ -1657,20 +1469,6 @@
       ],
       "Hash": "ad57b543f7c3fca05213ba78ff63df9b"
     },
-    "slider": {
-      "Package": "slider",
-      "Version": "0.3.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "cli",
-        "rlang",
-        "vctrs",
-        "warp"
-      ],
-      "Hash": "a584625e2b9e4fad4be135c8ea5c99aa"
-    },
     "statswalesr": {
       "Package": "statswalesr",
       "Version": "0.2.0",
@@ -1864,41 +1662,6 @@
       ],
       "Hash": "5ac22900ae0f386e54f1c307eca7d843"
     },
-    "tsibble": {
-      "Package": "tsibble",
-      "Version": "1.1.4",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "anytime",
-        "dplyr",
-        "ellipsis",
-        "generics",
-        "lifecycle",
-        "lubridate",
-        "methods",
-        "rlang",
-        "tibble",
-        "tidyselect",
-        "vctrs"
-      ],
-      "Hash": "d5da786ac5a28f62ca2eb8255ad7b9f3"
-    },
-    "tsibbledata": {
-      "Package": "tsibbledata",
-      "Version": "0.4.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "rappdirs",
-        "tsibble",
-        "utils",
-        "vctrs"
-      ],
-      "Hash": "6b53c37a18049320fb08478aef6310c2"
-    },
     "tzdb": {
       "Package": "tzdb",
       "Version": "0.4.0",
@@ -1990,16 +1753,6 @@
         "withr"
       ],
       "Hash": "390f9315bc0025be03012054103d227c"
-    },
-    "warp": {
-      "Package": "warp",
-      "Version": "0.2.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "fea474d578b1cbcb696ae6ac8bdcc439"
     },
     "withr": {
       "Package": "withr",
