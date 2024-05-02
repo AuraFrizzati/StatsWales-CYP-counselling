@@ -1,0 +1,609 @@
+---
+title: "StatsWales CYP Counselling"
+author: "Aura Frizzati"
+date: "2024-04-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+## Load relevant libraries
+library(statswalesr) ## import data from StatsWales
+library(tidyverse)  ## data wrangling
+library(sf)          ## choropleth maps
+library(patchwork)  ## compose ggplots
+library(gt) ## well formatted tables
+```
+
+# **Counselling for children and young people in StatsWales**
+
+Information on provision of independent counselling services for children and young people aged between 11 and 18 and pupils in Year 6 of primary school.
+(https://statswales.gov.wales/Catalogue/Education-and-Skills/Schools-and-Teachers/Counselling-for-Children-and-Young-People)
+
+- **SCHS0501**: the number of children and young people who have **attended counselling**. This data can be split by year, area, ethnicity and gender. 
+- **SCHS0502**: the number of children and young people who have **attended more than one counselling episode**. This data can be split by year, area, episode and gender. 
+- **SCHS0504**: the number of children and young people who have **received counselling by school year age**. This data can be split by year, area, school year age and gender. 
+- **POPU0006**: Wales population estimates by Year, Age and LA (https://statswales.gov.wales/Catalogue/Population-and-Migration/Population/Estimates/Local-Authority/populationestimates-by-localauthority-region-age)
+
+```{r, eval = FALSE, echo=FALSE}
+### Download relevant datasets from StatsWales
+SCHS0501 <- statswales_get_dataset("SCHS0501")
+SCHS0502 <- statswales_get_dataset("SCHS0502")
+SCHS0504 <- statswales_get_dataset("SCHS0504")
+POPU0006 <- statswales_get_dataset("POPU0006")
+```
+
+```{r, eval = FALSE, echo=FALSE}
+## save data localy to avoid download
+saveRDS(SCHS0501, file = "StatsWales_data/SCHS0501.rds")
+saveRDS(SCHS0502, file = "StatsWales_data/SCHS0502.rds")
+saveRDS(SCHS0504, file = "StatsWales_data/SCHS0504.rds")
+saveRDS(POPU0006, file = "StatsWales_data/POPU0006.rds")
+```
+
+
+```{r}
+## import local data downloaded form StatsWales using statswalesr library
+SCHS0501 <-readRDS(file = "StatsWales_data/SCHS0501.rds")
+SCHS0502 <-readRDS(file = "StatsWales_data/SCHS0502.rds")
+SCHS0504 <-readRDS(file = "StatsWales_data/SCHS0504.rds")
+POPU0006 <-readRDS(file = "StatsWales_data/POPU0006.rds")
+```
+
+The code below has been used to create the Figures used in the report
+
+### Figure 1: 
+
+#### Figure 1a: Number of CYP who received counselling in Wales, 2016/17 to 2022/23 
+  
+```{r}
+Table_Figure1a <-
+  SCHS0501 |>
+  mutate(Year = stringr::str_replace(Year_ItemName_ENG,"-","/"))  |>
+  filter(Data >=0 & 
+           Area_ItemName_ENG == "Wales" & 
+           Ethnicity_ItemName_ENG == "Total" & 
+           SexatBirth_ItemName_ENG == "Total" )|>
+  group_by(Year) |>
+  summarise(Data = sum(Data, na.rm = T)) 
+
+
+Table_Figure1a |> 
+  rename(`Tot CYP receiving counselling` = Data) |> 
+  gt::gt() |> tab_options(table.font.size = 12)
+```
+
+```{r}
+Figure1a <-
+  Table_Figure1a |>
+  ggplot(aes(x=Year,y=Data)) +
+  geom_bar(stat="identity") +
+  theme(
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(), 
+    axis.line = element_line(colour = "black")
+    ,axis.text.y=element_text(size=12),
+    axis.title=element_text(size=13)
+    ,axis.text.x=element_text(size=12,angle = 45, vjust = 1, hjust=1)) +
+  labs(y="Number of CYP\nreceiving counselling") +
+  geom_text(aes(label=Data), vjust=1.6, color="white", fontface = "bold", size=4.5)
+  
+
+Figure1a
+```
+
+#### Figure 1b: % of CYP who received counselling in Wales by Sex at Birth, 2016/17 to 2022/23 
+  
+```{r, message=FALSE}
+Table_Figure1b <-
+  SCHS0501 |>
+  mutate(Year = stringr::str_replace(Year_ItemName_ENG,"-","/"))  |>
+  filter(Data >=0 & 
+           Area_ItemName_ENG == "Wales" & 
+           Ethnicity_ItemName_ENG == "Total" & 
+           SexatBirth_ItemName_ENG != "Total" )|>
+  group_by(Year) |>
+  mutate(TotDataByYear = sum(Data, na.rm = T)) |>
+  ungroup(Year) |>
+  group_by(Year,SexatBirth_ItemName_ENG)|>
+  summarise(pct= round((Data/TotDataByYear) * 100,1)) |>
+  mutate(SexatBirth_ItemName_ENG = 
+           if_else(SexatBirth_ItemName_ENG == "Female (sex at birth)"
+                   , "Female","Male")) |>
+  ungroup()
+
+Table_Figure1b |>
+  pivot_wider(values_from = pct, names_from = SexatBirth_ItemName_ENG) |>
+  gt::gt() |> 
+  tab_options(table.font.size = 12)
+```
+
+```{r}
+Figure1b <-
+  Table_Figure1b |>
+  ggplot(aes(x=Year,y=pct, fill = SexatBirth_ItemName_ENG))  +
+  geom_bar(stat="identity") +
+  geom_text(aes(label=paste0(pct,"%")),
+            position=position_stack(vjust=0.5), fontface = "bold", size=4.5)+
+ # scale_x_continuous("Year", labels = as.character(2013:2022), breaks = 2013:2022)+ 
+  theme(
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(), 
+    axis.line = element_line(colour = "black")
+    ,legend.position="bottom"
+    ,legend.title = element_blank()
+    ,legend.text=element_text(size=12)
+    ,axis.text.y=element_text(size=12),
+    axis.title=element_text(size=13)
+    ,axis.text.x=element_text(size=12,angle = 45, vjust = 1, hjust=1)) +
+  labs(y="% of CYP\nreceiving counselling")+
+scale_fill_manual(values=c("orange", "#3390F3"))
+
+Figure1b
+```
+  
+```{r}
+Figure1 <- Figure1a/ Figure1b
+Figure1
+```
+
+```{r}
+## produce output figure
+png("output/Figure1.png", width = 700, height = 400)
+print(Figure1)
+dev.off()
+```
+
+### Figure 2
+
+#### Figure 2: Number of CYP who received counselling in Wales in 2022/23 by School Year and Gender
+
+```{r}
+vector_schoolyeargroups <- 
+  c("Year 6","Year 7","Year 8","Year 9","Year 10"
+    ,"Year 11","Year 12","Year 13")
+
+Table_Figure2 <-
+    SCHS0504 |>
+  filter(Area_ItemName_ENG == "Wales" &
+           SexatBirth_ItemName_ENG != "Total" &
+           Schoolyearagegroup_ItemName_ENG %in% vector_schoolyeargroups &
+           Year_ItemName_ENG == "2022-23"&
+           Schoolyearagegroup_Hierarchy == "1") |>
+  group_by(Schoolyearagegroup_ItemName_ENG, SexatBirth_ItemName_ENG) |>
+  mutate(
+    SexatBirth_ItemName_ENG = 
+      if_else(SexatBirth_ItemName_ENG == "Female (sex at birth)",
+              "Female", "Male")
+    ,Schoolyearagegroup_ItemName_ENG=as.factor(Schoolyearagegroup_ItemName_ENG)
+    ,Schoolyearagegroup_ItemName_ENG=
+      forcats::fct_relevel(Schoolyearagegroup_ItemName_ENG,vector_schoolyeargroups)) |> 
+  summarise(Data = sum(Data)) |>
+  ungroup() |>
+  tidyr::pivot_wider(names_from = SexatBirth_ItemName_ENG, values_from= Data) |>
+  mutate(
+    Total = Female + Male
+    ,TotalFemale = sum(Female)
+    ,TotalMale = sum(Male)
+    ,PercentFemale = round(100*Female/TotalFemale,1)
+    ,PercentMale = round(100*Male/TotalMale,1)
+  ) 
+
+Table_Figure2  |> 
+  rename(TotByYear = Total,
+         `School Year` = Schoolyearagegroup_ItemName_ENG) |> 
+  gt::gt() |>
+  tab_options(table.font.size = 12)
+```
+
+
+```{r}
+Figure2 <-
+  Table_Figure2 |>
+  ggplot(aes(x = Schoolyearagegroup_ItemName_ENG)) +
+  geom_bar(aes(y = Total), stat = "identity")+
+  geom_line(aes(y = 100*PercentFemale, group = 1), 
+            stat = "identity", colour = "orange",size = 2)+ 
+  geom_line(aes(y = 100*PercentMale, group = 1), 
+            stat = "identity", colour = "#3390F3",linetype = "dashed", size = 2)+ 
+  scale_y_continuous(sec.axis=sec_axis(~.*0.01,name="% CYP receiving counselling within\neach Sex at birth group")) + 
+  theme(
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(), 
+    axis.line = element_line(colour = "black")
+    ,axis.text.y=element_text(size=14)
+    ,axis.text.x=element_text(size=14,angle = 45, vjust = 1, hjust=1),
+    axis.title=element_text(size=14)) +
+  labs(x="School Year", y="Number of CYP receiving counselling")
+
+Figure2
+```
+```{r}
+## produce output figure
+png("output/Figure2.png", width = 700, height = 400)
+print(Figure2)
+dev.off()
+```
+
+
+### Figure 3: 
+
+```{r}
+## download LA boundaries
+GeoJSON_url_2022<-"https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Local_Authority_Districts_December_2022_UK_BUC_V2/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
+lad_boundaries_2022 <- read_sf(GeoJSON_url_2022)
+```
+
+#### Figure 3a: Rate of CYP per 100 of resident 10 to 18 year olds receiving counselling for year 2022/23 by Local Authority
+
+```{r, message = FALSE}
+## Extract relevant age band of CYP (10-18 years old) from the census population data and gorup by LA for mid-year 2022
+POPU0006_10_18years_byLA_2022<-
+  POPU0006 |>
+  filter(Year_ItemName_ENG == "Mid-year 2022" & 
+           Sex_ItemName_ENG =="Persons" &
+           !(Area_ItemName_ENG %in% c("Wales","North Wales", 
+                                      "Mid and South West Wales","South East Wales")) &
+           ## no need to keep age band 90-99 (which is coded only as an aggregated class)
+           (nchar(Age_Code)<4)) |>
+  mutate(Age = as.integer(Age_Code)) |>
+  filter(Age >= 10 & Age <= 18) |>
+  group_by(Year_ItemName_ENG,Area_ItemName_ENG,Area_AltCode1)|>
+  summarise(tot= sum(Data, na.rm = T)) |>
+  ungroup() 
+ 
+
+POPU0006_10_18years_byLA_2022 <-
+   ### Merge "Isle of Anglesey" and "Gwynedd"
+  POPU0006_10_18years_byLA_2022 |>
+  bind_rows(data.frame(
+    Year_ItemName_ENG = "Mid-year 2022"
+    ,Area_ItemName_ENG = "Isle of Anglesey and Gwynedd"
+    ,Area_AltCode1 = "W06000007"
+    ,tot = 
+      POPU0006_10_18years_byLA_2022 |>
+      filter(Area_AltCode1 == "W06000001") |> 
+      select(tot) |> pull() +
+      POPU0006_10_18years_byLA_2022 |>
+      filter(Area_AltCode1 == "W06000002") |> 
+      select(tot) |> pull() 
+  )) |>
+  ### Remove "Isle of Anglesey" and "Gwynedd"
+  filter(Area_AltCode1 != "W06000001" & Area_AltCode1 != "W06000002")
+
+## extract CYP receiving counselling in 2022/23 and group by LA
+SCHS0501_byLA_202223 <-
+  SCHS0501 |>  
+  filter(Data >=0 & Area_ItemName_ENG != "Wales" & 
+           Ethnicity_ItemName_ENG == "Total" & 
+           SexatBirth_ItemName_ENG == "Total" &
+           Year_ItemName_ENG=="2022-23")|>
+  group_by(Year_ItemName_ENG,Area_ItemName_ENG,Area_AltCode1)|>
+  summarise(tot= sum(Data, na.rm = T)) 
+
+## join the two tables and calculate rate of CYP receiving counselling per 100 CYP population by LA for 2022/23
+SCHS0501_byLA_202223_per100pop <-
+  SCHS0501_byLA_202223 |>
+  inner_join(
+    POPU0006_10_18years_byLA_2022 |>
+      select(Area_AltCode1,tot) |> rename(tot_pop =tot)
+    ,by = "Area_AltCode1") |>
+  mutate(N_per_100 = round(100*tot/tot_pop,1)) 
+
+Table_Figure3a <-
+  SCHS0501_byLA_202223_per100pop |>
+  ## Split "Isle of Anglesey" and "Gwynedd"
+  bind_rows(
+    SCHS0501_byLA_202223_per100pop |>
+      filter(Area_AltCode1 =="W06000007") |>
+      mutate(
+        Area_AltCode1 = "W06000001"
+        ,Area_ItemName_ENG = "Isle of Anglesey")) |>
+  bind_rows(
+    SCHS0501_byLA_202223_per100pop |>
+      filter(Area_AltCode1 =="W06000007") |>
+      mutate(
+        Area_AltCode1 = "W06000002"
+        ,Area_ItemName_ENG = "Gwynedd")) |> 
+  ## remove "Isle of Anglesey and Gwynedd"
+  filter(Area_AltCode1 !="W06000007") |>
+  ungroup()
+
+
+Table_Figure3a |>
+  select(Area_ItemName_ENG,N_per_100) |>
+  rename(`Local Authority` = Area_ItemName_ENG, Rate = N_per_100) |>
+  arrange(desc(Rate)) |> 
+  gt::gt() |>
+  tab_options(table.font.size = 12)
+
+Wales_national_rate <-round(100*sum(SCHS0501_byLA_202223_per100pop$tot)/sum(SCHS0501_byLA_202223_per100pop$tot_pop),1)
+
+print(paste0("Wales national rate: ", Wales_national_rate, " per 100 residents 10-18 years-old"))
+```
+
+```{r}
+Figure3a <-
+  Table_Figure3a |>
+  left_join(
+    lad_boundaries_2022,
+    by = c("Area_AltCode1" = "LAD22CD")
+  ) |>
+  rename(`Rate per 100`= N_per_100) |>
+  ggplot(aes(fill = `Rate per 100`)) + 
+  geom_sf(aes(geometry = geometry)) + # plot all local authority geometries
+  # removes unnecessary background grid and axes
+  theme_void()+
+  scale_fill_gradient(low = "#CFDDEF", high = "#0F396F")+
+  theme(    
+    legend.text = element_text(size = 16),
+    legend.title = element_text(size = 30)
+    )
+
+Figure3a
+```
+
+
+
+
+#### Figure 3b: Average number of waiting weeks for counselling sessions by LA for year 2022/23 
+  
+```{r}
+Table_Figure3b <-
+  SCHS0502 |>
+  filter(
+    Year_Code == "202223" &
+      Episodes_ItemName_ENG == "Average number of weeks waiting to attend first counselling session?" &
+      SexatBirth_ItemName_ENG == "Total") |>
+  
+  ## Split "Isle of Anglesey" and "Gwynedd"
+  bind_rows(
+    SCHS0502 |>
+      filter(Year_Code == "202223" &
+               Episodes_ItemName_ENG == "Average number of weeks waiting to attend first counselling session?" &
+               SexatBirth_ItemName_ENG == "Total" &
+               Area_AltCode1 =="W06000007") |>
+      mutate(
+        Area_AltCode1 = "W06000001"
+        ,Area_ItemName_ENG = "Isle of Anglesey")) |>
+  bind_rows(
+    SCHS0502 |>
+      filter(Year_Code == "202223" &
+               Episodes_ItemName_ENG == "Average number of weeks waiting to attend first counselling session?" &
+               SexatBirth_ItemName_ENG == "Total" &
+               Area_AltCode1 =="W06000007") |>
+              mutate(
+                Area_AltCode1 = "W06000002"
+                ,Area_ItemName_ENG = "Gwynedd")) |>
+  
+  ## Add "Conwy" entry as NA
+  bind_rows(
+    SCHS0502 |>
+      filter(Year_Code == "202223" &
+               Episodes_ItemName_ENG == "Average number of weeks waiting to attend first counselling session?" &
+               SexatBirth_ItemName_ENG == "Total" &
+               Area_AltCode1 =="W06000007")  |>
+              mutate(
+                Area_AltCode1 = "W06000003"
+                ,Area_ItemName_ENG = "Conwy"
+                ,Data = NA)) |>
+  rename(`Average waiting weeks`= Data)
+
+  
+Table_Figure3b |> 
+  select(Area_ItemName_ENG,`Average waiting weeks`) |> 
+  rename(`Local Authority` = Area_ItemName_ENG) |>
+  arrange(desc(`Average waiting weeks`)) |> 
+  gt::gt() |>
+  tab_options(table.font.size = 12)
+
+
+Wales_national_avgwaitingweeks <-
+  SCHS0502 |>
+  filter(
+    Year_Code == "202223" &
+      Episodes_ItemName_ENG == "Average number of weeks waiting to attend first counselling session?" &
+      SexatBirth_ItemName_ENG == "Total") |> summarise(`Wales average waiting weeks` = mean(Data,na.rm=T))
+Wales_national_avgwaitingweeks
+```
+
+```{r}
+Figure3b <-
+  Table_Figure3b |>
+  left_join(
+    lad_boundaries_2022,
+    by = c("Area_AltCode1" = "LAD22CD")
+  ) |>
+  ggplot(aes(fill = `Average waiting weeks`)) + 
+  geom_sf(aes(geometry = geometry)) + # plot all local authority geometries
+  # removes unnecessary background grid and axes
+  theme_void()+
+  scale_fill_gradient(low = "#EFFEB7", high = "#F45E49")+
+  theme(    
+    legend.text = element_text(size = 26), 
+    legend.title = element_text(size = 30))
+
+Figure3b
+
+```
+
+
+
+```{r, results='hide'}
+Fig3_part1 <- Figure3a + Figure3b
+#Fig3_part1
+```
+  
+```{r}
+## produce output figure
+png("output/Fig3_part1.png", width = 1500, height = 1000)
+print(Fig3_part1)
+dev.off()
+```
+  
+#### Figure 3c: Average number of counselling sessions per CYP by LA for year 2022/23
+  
+```{r}
+Table_Figure3c <-
+    SCHS0502 |>
+  filter(
+    Year_Code == "202223" &
+      Episodes_ItemName_ENG == "Average number of sessions (calculated)" &
+      SexatBirth_ItemName_ENG == "Total") |>
+  
+  ## Split "Isle of Anglesey" and "Gwynedd"
+  bind_rows(
+    SCHS0502 |>
+      filter(Year_Code == "202223" &
+               Episodes_ItemName_ENG == "Average number of sessions (calculated)" &
+               SexatBirth_ItemName_ENG == "Total" &
+               Area_AltCode1 =="W06000007") |>
+      mutate(
+        Area_AltCode1 = "W06000001"
+        ,Area_ItemName_ENG = "Isle of Anglesey")) |>
+  bind_rows(
+    SCHS0502 |>
+      filter(Year_Code == "202223" &
+               Episodes_ItemName_ENG == "Average number of sessions (calculated)" &
+               SexatBirth_ItemName_ENG == "Total" &
+               Area_AltCode1 =="W06000007") |>
+              mutate(
+                Area_AltCode1 = "W06000002"
+                ,Area_ItemName_ENG = "Gwynedd")) |>
+  filter(Area_AltCode1 !="W06000007") |>
+  rename(`Average sessions`= Data)
+
+Table_Figure3c |> 
+  select(Area_ItemName_ENG,`Average sessions`) |> 
+  rename(`Local Authority` = Area_ItemName_ENG) |>
+  arrange(desc(`Average sessions`)) |> 
+  gt::gt()  |>
+  tab_options(table.font.size = 12)
+
+
+Wales_avg_N_sessions <-
+  SCHS0502 |>
+  filter(
+    Year_Code == "202223" &
+      Episodes_ItemName_ENG == "Average number of sessions (calculated)" &
+      SexatBirth_ItemName_ENG == "Total") |> summarise(Wales_avg_N_sessions = mean(Data,na.rm=T))
+
+Wales_avg_N_sessions
+```
+
+```{r}
+Figure3c <-
+  Table_Figure3c |>
+  left_join(
+    lad_boundaries_2022,
+    by = c("Area_AltCode1" = "LAD22CD")
+  ) |>
+  ggplot(aes(fill = `Average sessions`)) +
+  geom_sf(aes(geometry = geometry)) + # plot all local authority geometries
+  # removes unnecessary background grid and axes
+  theme_void()+
+  scale_fill_gradient(low = "#D8BDEC", high = "#9733E0")+
+  theme(    
+    legend.text = element_text(size = 20), 
+    legend.title = element_text(size = 30))
+
+Figure3c
+  
+```
+
+  
+#### Figure 3d: Average improvement score for counselling sessions by LA for year 2022/23
+  
+```{r}
+Table_Figure3d <-
+    SCHS0502 |>
+  filter(
+    Year_Code == "202223" &
+      Episodes_ItemName_ENG == "Average Improvement" &
+      SexatBirth_ItemName_ENG == "Total") |>
+  
+  ## Split "Isle of Anglesey" and "Gwynedd"
+  bind_rows(
+    SCHS0502 |>
+      filter(Year_Code == "202223" &
+               Episodes_ItemName_ENG == "Average Improvement" &
+               SexatBirth_ItemName_ENG == "Total" &
+               Area_AltCode1 =="W06000007") |>
+      mutate(
+        Area_AltCode1 = "W06000001"
+        ,Area_ItemName_ENG = "Isle of Anglesey")) |>
+  bind_rows(
+    SCHS0502 |>
+      filter(Year_Code == "202223" &
+               Episodes_ItemName_ENG == "Average Improvement" &
+               SexatBirth_ItemName_ENG == "Total" &
+               Area_AltCode1 =="W06000007") |>
+              mutate(
+                Area_AltCode1 = "W06000002"
+                ,Area_ItemName_ENG = "Gwynedd")) |>
+  filter(Area_AltCode1 !="W06000007") |>
+  rename(`Average improvement`= Data) 
+
+Table_Figure3d |> 
+  select(Area_ItemName_ENG,`Average improvement`) |> 
+  rename(`Local Authority` = Area_ItemName_ENG) |>
+  arrange(desc(`Average improvement`)) |> 
+  gt::gt()  |>
+  tab_options(table.font.size = 12)
+
+
+Wales_avg_improvement <-
+  SCHS0502 |>
+  filter(
+    Year_Code == "202223" &
+      Episodes_ItemName_ENG == "Average Improvement" &
+      SexatBirth_ItemName_ENG == "Total") |> summarise(Wales_avg_improvement = mean(Data,na.rm=T))
+
+Wales_avg_improvement
+```
+
+```{r}
+Figure3d <-
+  Table_Figure3d |>
+  left_join(
+    lad_boundaries_2022,
+    by = c("Area_AltCode1" = "LAD22CD")
+  ) |>
+  ggplot(aes(fill = `Average improvement`)) + # create a ggplot object and 
+  # change its fill colour according to median_age
+  geom_sf(aes(geometry = geometry)) + # plot all local authority geometries
+  #scale_fill_viridis("Average Waiting Weeks") +
+  # removes unnecessary background grid and axes
+  theme_void()+
+  scale_fill_gradient(low = "#EFFEB7", high = "#0F6F11")+
+  theme(    
+    legend.text = element_text(size = 26), 
+    legend.title = element_text(size = 30))
+
+Figure3d
+```
+
+
+```{r , results='hide'}
+Fig3_part2 <- Figure3c + Figure3d
+#Fig3_part2
+```
+
+
+```{r}
+## produce output figure
+png("output/Fig3_part2.png", width = 1500, height = 1000)
+print(Fig3_part2)
+dev.off()
+```
+
+
+
+
+
