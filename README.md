@@ -8,4 +8,4 @@ Repository for the report:
 - `output` --> folder containing figures generated for the report. 
 
 
-You can use the `renv` library to reproduce the environment used to create this project. Just use the command `renv::init()` in the console and follow the instructions to install all the project's libraries and related dependencies.
+You can use the `renv` library to reproduce the environment used to create this project. Just use the command `renv::init()` in the RStudio console (after you have cloned the project in your local machine) and follow the instructions to install all the project's libraries and related dependencies.
