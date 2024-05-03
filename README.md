@@ -7,3 +7,5 @@ Repository for the report:
 - `StatsWales_data` --> input raw table downloaded from R Wales via r `statswalesr` library. 
 - `output` --> folder containing figures generated for the report. 
 
+
+You can use the `renv` library to reproduce the environment used to create this project. Just use the command `renv::init()` in the console and follow the instructions to install all the project's libraries and related dependencies.
